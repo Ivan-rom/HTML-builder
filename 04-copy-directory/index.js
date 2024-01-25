@@ -18,4 +18,20 @@ fs.mkdir(copyDir, { recursive: true }, (err) => {
       );
     }
   });
+  fs.readdir(copyDir, (err, files) => {
+    if (err) throw err;
+    for (const file of files) {
+      fs.access(
+        path.join(__dirname, 'files', file),
+        fs.constants.F_OK,
+        (err) => {
+          if (err) {
+            fs.unlink(path.join(copyDir, file), (err) => {
+              if (err) throw err;
+            });
+          }
+        },
+      );
+    }
+  });
 });

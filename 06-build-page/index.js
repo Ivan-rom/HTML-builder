@@ -49,6 +49,45 @@ fs.mkdir(distPath, { recursive: true }, (err) => {
           });
         });
       }
+      // delete unnecessary files and folders
+      // removing unnecessary folders
+      fs.readdir(copyDir, (error, folders) => {
+        if (error) throw error;
+        for (const folder of folders) {
+          fs.stat(path.join(__dirname, 'assets', folder), (err) => {
+            if (err) {
+              fs.rm(path.join(copyDir, folder), { recursive: true }, (err) => {
+                if (err) throw err;
+              });
+              fs.readdir(path.join(copyDir, folder), (err, files) => {
+                if (err) throw err;
+                for (const file of files) {
+                  fs.unlink(path.join(copyDir, folder, file), (err) => {
+                    if (err) throw err;
+                  });
+                }
+              });
+            }
+          });
+          // checking files
+          fs.readdir(path.join(copyDir, folder), (err, files) => {
+            if (err) throw err;
+            for (const file of files) {
+              fs.access(
+                path.join(__dirname, 'assets', folder, file),
+                fs.constants.F_OK,
+                (err) => {
+                  if (err) {
+                    fs.unlink(path.join(copyDir, folder, file), (error) => {
+                      if (error && error?.code !== 'ENOENT') throw error;
+                    });
+                  }
+                },
+              );
+            }
+          });
+        }
+      });
     });
   });
 
